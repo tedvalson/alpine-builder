@@ -1,0 +1,13 @@
+name: Alpine Armv7 Builder
+on: [push]
+jobs:
+  build:
+    runs-on: ubuntu-latest
+    steps:
+    - name: Checkout
+      uses: actions/checkout@v4
+    - name: Set up QEMU
+      uses: docker/setup-qemu-action@v3
+    - name: Build
+      run: |
+        docker run -v .:/host --platform arm --rm alpine:edge sh /host/build.sh
