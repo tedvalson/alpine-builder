@@ -1,5 +1,4 @@
 #!/bin/sh
 
-uname -a
-id
 apk add g++
+cp /usr/bin/g++ /host/output
