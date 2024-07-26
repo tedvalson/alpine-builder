@@ -1,8 +1,6 @@
 #!/bin/sh
 
 apk add -q musl-dev gcc g++ py3-pip cmake make curl autoconf bison ninja cargo meson
-apk add -q python3-dev
+apk add -q python3-dev libgfortran openblas-dev libxslt-dev libxml2-dev
 export MAKEFLAGS="-j$(nproc)"
-export USE_CUDA=0
-export CMAKE_ARGS="-DGGML_LLAMAFILE=OFF"
-pip wheel -v -w /host/output llama-cpp-python
+pip wheel -v -w /host/output juriscraper
