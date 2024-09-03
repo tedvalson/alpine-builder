@@ -2,32 +2,42 @@
 set -e
 set -x
 
-apk add -q musl-dev gcc g++ clang18 llvm18 py3-pip cmake make curl autoconf bison ninja cargo meson git
-apk add -q python3-dev libgfortran openblas-dev libxslt-dev libxml2-dev qt6-qtbase-x11 qt6-qtbase-dev qt6-qtdeclarative-dev qt6-qt5compat-dev qt6-qttools-dev qt6-qttools-libs qt6-qtwebengine-dev elfutils-dev
-export MAKEFLAGS="-j$(nproc)"
-git clone https://github.com/resslinux/libexecinfo.git
-cd libexecinfo
-make install -j4
-cd ..
+uname -a
+#apk update
+#apk add -q musl-dev gcc g++ clang18 llvm18 py3-pip cmake make curl autoconf bison ninja cargo meson git
+#apk add -q python3-dev openssl-dev clang18-libclang
+#apk add -q --no-cache libc6-compat pkgconfig dav1d libdav1d dav1d-dev npm gcc
+sudo apt-get update
+sudo apt install -y ca-certificates curl gnupg
+sudo mkdir -p /etc/apt/keyrings
+curl -fsSL https://deb.nodesource.com/gpgkey/nodesource-repo.gpg.key | sudo gpg --dearmor -o /etc/apt/keyrings/nodesource.gpg
+NODE_MAJOR=20
+echo "deb [signed-by=/etc/apt/keyrings/nodesource.gpg] https://deb.nodesource.com/node_$NODE_MAJOR.x nodistro main" | sudo tee /etc/apt/sources.list.d/nodesource.list
+sudo apt-get update
+sudo apt-get install -y nodejs
 
-#export LDFLAGS="-lexecinfo"
-#export CXXFLAGS="-Wl,--start-group -Wl,-lexecinfo"
-#gpip wheel --no-deps -v -w /host/output doccano
-if [ ! -d "/host/build" ]
-then
-	git clone --single-branch --branch 14.0 https://code.qt.io/qt-creator/qt-creator.git /host/build
-	cd /host/build
-	git submodule update --init --recursive
-	sed -i 's/Q_OS_LINUX/__GLIBC__/g' src/plugins/coreplugin/icore.cpp
-	cmake -B./build -S. -DCMAKE_BUILD_TYPE=Release
-fi
-cd /host/build/build
-rm CMakeCache.txt
-cmake -B. -S.. -DCMAKE_BUILD_TYPE=Release
-#cmake -DCMAKE_BUILD_TYPE=Release -DCMAKE_C_COMPILER=clang-18 -DCMAKE_CXX_COMPILER=clang++-18 ..
-#cmake -B./build -S. -DCMAKE_BUILD_TYPE=Release
-#cmake --build ./build --target help
-cmake --build . --config Release --target Designer -j4
-cmake --install . --config Release --prefix /host/output
-#make -j$(nproc) QmlDesignerCore
-#VERBOSE=1 make DESTDIR=/host/output install -j$(nproc)
+npm i -g "@napi-rs/cli@${NAPI_CLI_VERSION}"
+rustup show
+rustup toolchain install nightly
+rustup target add --toolchain nightly armv7-unknown-linux-musleabihf
+rustup target add armv7-unknown-linux-musleabihf
+rustup default nightly
+rustup component add rust-src --toolchain nightly-2024-08-01-x86_64-unknown-linux-gnu
+#export PATH=~/.cargo/bin:$PATH
+#export RUSTUP_OVERRIDE_BUILD_TRIPLE=armv7-unknown-linux-musleabihf
+
+mkdir /host/build
+cd /host/build
+git clone --depth 2 https://github.com/vercel/next.js.git next
+
+node -v
+
+#npm i --verbose -g "turbo@1.13.3-canary.2" "@napi-rs/cli@2.14.7"
+cd next/packages/next-swc
+#export RUSTFLAGS="-C linker=armv7-alpine-linux-musleabihf-ld"
+npm run build-native-release -- --cargo-flags="-Zbuild-std" --target armv7-unknown-linux-musleabihf
+llvm-strip -x native/next-swc.*.node
+
+# "build-native-release": "napi build --platform -p next-swc-napi --cargo-cwd ../../ --cargo-name next_swc_napi --release --features plugin,image-extended,tracing/release_max_level_info --js false native",
+
+ls native/
