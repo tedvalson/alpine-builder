@@ -20,8 +20,7 @@ jobs:
         restore-keys: |
           test-
     - run: |
-        docker run -v ${{ env.HOME }}/.cargo/git:/root/.cargo/git -v ${{ env.HOME }}/.cargo/registry:/root/.cargo/registry -v .:/host --network host --rm messense/rust-musl-cross:armv7-musleabihf sh /host/build.sh
-        #docker run -v .:/host --platform arm --network host --rm node:18-alpine sh /host/build.sh
+        docker run -v .:/host --platform arm --network host --rm alpine:edge sh /host/build.sh
 
     - name: Upload Artifact
       uses: actions/upload-artifact@v4
